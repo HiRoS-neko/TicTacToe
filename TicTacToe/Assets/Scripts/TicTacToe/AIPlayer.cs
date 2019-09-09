@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
 namespace TicTacToe
@@ -23,27 +24,61 @@ namespace TicTacToe
         [SerializeField] private BoardObject _currentBoard;
 
         [ContextMenu("Play a move")]
-        public void CalculateMove()
+        public bool CalculateMove()
         {
-            CalculateMove(_currentBoard);
+            return CalculateMove(_currentBoard);
         }
 
-        public void CalculateMove(BoardObject boardObject)
+        public bool CalculateMove(BoardObject boardObject)
         {
             if (boardObject == null || _currentBoard == null)
             {
                 Debug.LogError("No valid board found", gameObject);
-                return;
+                return false;
             }
 
             if (boardObject == null) boardObject = _currentBoard;
 
-            var pos = MiniMax(boardObject.board, (int) _difficulty, true);
+            Piece win = Piece.None;
 
-            if (pos != null)
+            if (!MovesLeft(boardObject.board) || (win = HasWin(boardObject.board)) != Piece.None)
             {
-                boardObject.board.Pieces[pos.Item1, pos.Item2] = _role;
+                switch (win)
+                {
+                    case Piece.XPiece:
+                        Debug.Log("X has won");
+                        return false;
+                        break;
+                    case Piece.None:
+                        Debug.Log("No available moves left");
+                        return false;
+                        break;
+                    case Piece.OPiece:
+                        Debug.Log("O has won");
+                        return false;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
+
+            var pos = MiniMax(Board.Clone(boardObject.board), (int) _difficulty, true);
+
+            if (pos.Item2 != null)
+            {
+                boardObject.board = DoMove(boardObject.board, pos.Item2, _role);
+            }
+
+            return true;
+        }
+
+        private Board DoMove(Board board, Tuple<int, int> move, Piece role)
+        {
+            var newBoard = Board.Clone(board);
+
+            newBoard.Pieces[move.Item1, move.Item2] = role;
+
+            return newBoard;
         }
 
         /// <summary>
@@ -52,14 +87,68 @@ namespace TicTacToe
         /// <param name="board">The state of the board to be used to find a move</param>
         /// <param name="depth">The remaining depth left of the algorithm</param>
         /// <returns></returns>
-        public Tuple<int, int> MiniMax(Board board, int depth, bool isMax)
+        public Tuple<int, Tuple<int, int>> MiniMax(Board board, int depth, bool isMax)
         {
+            int score = 0;
             Tuple<int, int> move = null;
 
+            //evaluate the score of the current board
+            score = EvaluateBoard(board, (isMax ? _role : (Piece) ((int) _role * -1)));
+
+            //if there is no moves left or someone has one, return the score
+            if (!MovesLeft(board) || depth == 0) return new Tuple<int, Tuple<int, int>>(score, move);
+
+            if (isMax)
+            {
+                Tuple<int, Tuple<int, int>> best = new Tuple<int, Tuple<int, int>>(int.MinValue, move);
+                for (int i = 0; i < board.Size; i++)
+                {
+                    for (int j = 0; j < board.Size; j++)
+                    {
+                        if (board.Pieces[i, j] == Piece.None)
+                        {
+                            var temp = MiniMax(
+                                DoMove(board, new Tuple<int, int>(i, j), (isMax ? _role : (Piece) ((int) _role * -1))),
+                                depth - 1, !isMax);
+
+                            if (temp.Item1 > best.Item1)
+                            {
+                                best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
+                            }
+                        }
+                    }
+                }
+
+                return best;
+            }
+
+            else
+            {
+                Tuple<int, Tuple<int, int>> best = new Tuple<int, Tuple<int, int>>(int.MaxValue, move);
+                for (int i = 0; i < board.Size; i++)
+                {
+                    for (int j = 0; j < board.Size; j++)
+                    {
+                        if (board.Pieces[i, j] == Piece.None)
+                        {
+                            var temp = MiniMax(
+                                DoMove(board, new Tuple<int, int>(i, j), (isMax ? _role : (Piece) ((int) _role * -1))),
+                                depth - 1, !isMax);
+
+                            if (temp.Item1 < best.Item1)
+                            {
+                                best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
+                            }
+                        }
+                    }
+                }
+
+                return best;
+            }
 
             //move = new Tuple<int, int>(Random.Range(0, board.Size), Random.Range(0, board.Size));
 
-            return move;
+            return new Tuple<int, Tuple<int, int>>(score, move);
         }
 
         [ContextMenu("Evaluate Board")]
@@ -69,8 +158,47 @@ namespace TicTacToe
         }
 
 
-        private Piece HasWin()
+        private Piece HasWin(Board board)
         {
+            int[] sumX = new int[board.Size];
+            int posDiag = 0, negDiag = 0;
+            for (int i = 0; i < board.Size; i++)
+            {
+                posDiag += (int) board.Pieces[i, i];
+                negDiag += (int) board.Pieces[i, (board.Size - 1) - i];
+                int sumY = 0;
+                for (int j = 0; j < board.Size; j++)
+                {
+                    sumY += (int) board.Pieces[i, j];
+                    sumX[j] += (int) board.Pieces[i, j];
+                }
+
+
+                if (Mathf.Abs(sumY) == board.Size)
+                {
+                    return (Piece) Mathf.Sign(sumY);
+                }
+            }
+
+            if (Mathf.Abs(posDiag) == board.Size)
+            {
+                return (Piece) Mathf.Sign(posDiag);
+            }
+
+            if (Mathf.Abs(negDiag) == board.Size)
+            {
+                return (Piece) Mathf.Sign(negDiag);
+            }
+
+            for (int i = 0; i < board.Size; i++)
+            {
+                if (Mathf.Abs(sumX[i]) == board.Size)
+                {
+                    return (Piece) Mathf.Sign(sumX[i]);
+                }
+            }
+
+
             return Piece.None;
         }
 
@@ -80,7 +208,7 @@ namespace TicTacToe
             bool available = false;
 
             //check for win conditions already
-            if (HasWin() != Piece.None) return false;
+            //if (HasWin(board) != Piece.None) return false;
 
             //check for available spots left
             foreach (var boardPiece in board.Pieces)
@@ -92,7 +220,7 @@ namespace TicTacToe
                 }
             }
 
-            return true;
+            return available;
         }
 
         private int EvaluateBoard(Board board, Piece pieceToEvaluateFor)

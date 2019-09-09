@@ -131,6 +131,8 @@ GameObject:
   - component: {fileID: 498768403}
   - component: {fileID: 498768402}
   - component: {fileID: 498768404}
+  - component: {fileID: 498768406}
+  - component: {fileID: 498768405}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -178,6 +180,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _difficulty: 2
   _role: 1
+  _currentBoard: {fileID: 498768402}
+--- !u!114 &498768405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 498768401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a56024fd04394b4ba4d6d0c1920349c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _ai:
+  - {fileID: 498768404}
+  - {fileID: 498768406}
+--- !u!114 &498768406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 498768401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8182066e72ad1164098ce7355677eb94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _difficulty: 2
+  _role: -1
   _currentBoard: {fileID: 498768402}
 --- !u!1 &1687258581
 GameObject:

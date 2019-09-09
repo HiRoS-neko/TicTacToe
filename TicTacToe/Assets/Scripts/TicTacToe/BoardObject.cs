@@ -33,5 +33,23 @@ namespace TicTacToe
             get => _pieces;
             set => _pieces = value;
         }
+
+        public static Board Clone(Board board)
+        {
+            var newBoard = new Board();
+
+            newBoard.Size = board.Size;
+            newBoard.Pieces = new Piece[newBoard.Size, newBoard.Size];
+
+            for (int i = 0; i < board.Size; i++)
+            {
+                for (int j = 0; j < board.Size; j++)
+                {
+                    newBoard.Pieces[i, j] = board.Pieces[i, j];
+                }
+            }
+
+            return newBoard;
+        }
     }
 }
