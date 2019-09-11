@@ -66,7 +66,7 @@ namespace TicTacToe
 
             if (pos.Item2 != null)
             {
-                boardObject.board = DoMove(boardObject.board, pos.Item2, _role);
+                boardObject.board.SetPiece(pos.Item2.Item1, pos.Item2.Item2, _role);
             }
 
             return true;
@@ -74,11 +74,7 @@ namespace TicTacToe
 
         private Board DoMove(Board board, Tuple<int, int> move, Piece role)
         {
-            var newBoard = Board.Clone(board);
-
-            newBoard.Pieces[move.Item1, move.Item2] = role;
-
-            return newBoard;
+            return board.SetPieceClone(move.Item1, move.Item2, role);
         }
 
         /// <summary>
@@ -115,6 +111,15 @@ namespace TicTacToe
                             if (temp.Item1 > best.Item1)
                             {
                                 best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
+                            }
+                            else if (temp.Item1 == best.Item1)
+                            {
+                                //choose randomly between them in order to make a game non-deterministic
+                                var r = Random.Range(0, 1f);
+                                if (r > 0.5f)
+                                {
+                                    best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
+                                }
                             }
                         }
                     }

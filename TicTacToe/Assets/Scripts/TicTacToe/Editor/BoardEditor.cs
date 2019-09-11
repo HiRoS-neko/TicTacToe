@@ -33,6 +33,9 @@ namespace TicTacToe.Editor
                 }
             }
 
+            boardObject.boardSpacePrefab =
+                (BoardSpace) EditorGUILayout.ObjectField("Board Space Prefab", boardObject, typeof(BoardSpace), false);
+
             boardObject.board = board;
         }
     }
