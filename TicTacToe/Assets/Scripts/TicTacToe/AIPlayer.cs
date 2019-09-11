@@ -93,7 +93,8 @@ namespace TicTacToe
             Tuple<int, int> move = null;
 
             //evaluate the score of the current board
-            score = EvaluateBoard(board, (isMax ? _role : (Piece) ((int) _role * -1)));
+            score = (EvaluateBoard(board, (isMax ? _role : (Piece) ((int) _role * -1))) -
+                     EvaluateBoard(board, (isMax ? (Piece) ((int) _role * -1) : _role)));
 
             //if there is no moves left or someone has one, return the score
             if (!MovesLeft(board) || depth == 0) return new Tuple<int, Tuple<int, int>>(score, move);

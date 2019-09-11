@@ -11,11 +11,14 @@ namespace Parallax
 
         private Vector2 _cameraBounds;
 
+        [SerializeField] private Vector3 _focusPoint;
+
         [SerializeField] private InputControl _input;
 
         private void OnEnable()
         {
-            _cameraBounds = Vector2.one;
+            _cameraBounds = (Display.main.renderingWidth * Vector2.right + Display.main.renderingHeight * Vector2.up) /
+                            Mathf.Min(Display.main.renderingWidth, Display.main.renderingHeight);
             _camera = GetComponent<Camera>();
             _input.Rotation += Rotation;
         }
@@ -26,9 +29,8 @@ namespace Parallax
             //to get camera position, it needs to be multiplied by the _cameraBounds
             _camera.transform.localPosition = new Vector2(rot.x * _cameraBounds.x, rot.y * _cameraBounds.y);
 
-            //for the lens shift, it needs to be from 0 -> 1 instead of -1 -> 1
-            //var lensShift = (rot * 0.5f) + 0.5f * Vector2.one;
-            _camera.lensShift = rot * 0.25f;
+
+            _camera.transform.LookAt(_focusPoint);
         }
 
         private void OnDisable()

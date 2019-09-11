@@ -34,3 +34,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+*/TextMesh Pro*
+TicTacToe/Assets/TextMesh Pro
+TicTacToe/Assets/TextMesh Pro.meta

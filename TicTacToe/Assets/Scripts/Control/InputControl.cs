@@ -7,9 +7,14 @@ namespace Control
     {
         public Action<Vector2> Rotation;
 
+        private Vector2 _rotation;
+
         private void Update()
         {
-            Rotation?.Invoke(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized);
+            _rotation = Vector2.Lerp(_rotation,
+                new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized, 0.5f);
+
+            Rotation?.Invoke(_rotation);
         }
     }
 }
