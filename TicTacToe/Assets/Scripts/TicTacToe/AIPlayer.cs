@@ -13,8 +13,8 @@ namespace TicTacToe
             Easy = 1, // essentially random
             Medium = 2, // difficult on small baords
             Hard = 4, // difficult on medium boards
-            VeryHard = 8, // difficult on large boards
-            Impossible = 16 // should be effectively impossible to win
+            VeryHard = 6, // difficult on large boards
+            Impossible = 8 // should be effectively impossible to win
         }
 
         [SerializeField] private Difficulty _difficulty;
@@ -62,7 +62,7 @@ namespace TicTacToe
                 }
             }
 
-            var pos = MiniMax(Board.Clone(boardObject.board), (int) _difficulty, true);
+            var pos = MiniMax(boardObject.board, (int)_difficulty, true);
 
             if (pos.Item2 != null)
             {
@@ -71,12 +71,7 @@ namespace TicTacToe
 
             return true;
         }
-
-        private Board DoMove(Board board, Tuple<int, int> move, Piece role)
-        {
-            return board.SetPieceClone(move.Item1, move.Item2, role);
-        }
-
+        
         /// <summary>
         /// A function to determine what move to play of tic tac toe based on the minimax algorithm
         /// </summary>
@@ -88,9 +83,11 @@ namespace TicTacToe
             int score = 0;
             Tuple<int, int> move = null;
 
+            var curPlayer = (isMax ? _role : (Piece)((int)_role * -1));
+
             //evaluate the score of the current board
-            score = (EvaluateBoard(board, (isMax ? _role : (Piece) ((int) _role * -1))) -
-                     EvaluateBoard(board, (isMax ? (Piece) ((int) _role * -1) : _role)));
+            score = (EvaluateBoard(board, (isMax ? _role : (Piece)((int)_role * -1))) -
+                     EvaluateBoard(board, (isMax ? (Piece)((int)_role * -1) : _role)));
 
             //if there is no moves left or someone has one, return the score
             if (!MovesLeft(board) || depth == 0) return new Tuple<int, Tuple<int, int>>(score, move);
@@ -104,9 +101,14 @@ namespace TicTacToe
                     {
                         if (board.Pieces[i, j] == Piece.None)
                         {
-                            var temp = MiniMax(
-                                DoMove(board, new Tuple<int, int>(i, j), (isMax ? _role : (Piece) ((int) _role * -1))),
-                                depth - 1, !isMax);
+                            //do move to board
+                            board.SetPieceSilent(i, j, curPlayer);
+
+                            //try move in minimax
+                            var temp = MiniMax(board, depth - 1, !isMax);
+
+                            //undo move on board
+                            board.SetPieceSilent(i, j, Piece.None);
 
                             if (temp.Item1 > best.Item1)
                             {
@@ -137,9 +139,14 @@ namespace TicTacToe
                     {
                         if (board.Pieces[i, j] == Piece.None)
                         {
-                            var temp = MiniMax(
-                                DoMove(board, new Tuple<int, int>(i, j), (isMax ? _role : (Piece) ((int) _role * -1))),
-                                depth - 1, !isMax);
+                            //do move to board
+                            board.SetPieceSilent(i, j, curPlayer);
+
+                            //try move in minimax
+                            var temp = MiniMax(board, depth - 1, !isMax);
+
+                            //undo move on board
+                            board.SetPieceSilent(i, j, Piece.None);
 
                             if (temp.Item1 < best.Item1)
                             {
@@ -170,37 +177,37 @@ namespace TicTacToe
             int posDiag = 0, negDiag = 0;
             for (int i = 0; i < board.Size; i++)
             {
-                posDiag += (int) board.Pieces[i, i];
-                negDiag += (int) board.Pieces[i, (board.Size - 1) - i];
+                posDiag += (int)board.Pieces[i, i];
+                negDiag += (int)board.Pieces[i, (board.Size - 1) - i];
                 int sumY = 0;
                 for (int j = 0; j < board.Size; j++)
                 {
-                    sumY += (int) board.Pieces[i, j];
-                    sumX[j] += (int) board.Pieces[i, j];
+                    sumY += (int)board.Pieces[i, j];
+                    sumX[j] += (int)board.Pieces[i, j];
                 }
 
 
                 if (Mathf.Abs(sumY) == board.Size)
                 {
-                    return (Piece) Mathf.Sign(sumY);
+                    return (Piece)Mathf.Sign(sumY);
                 }
             }
 
             if (Mathf.Abs(posDiag) == board.Size)
             {
-                return (Piece) Mathf.Sign(posDiag);
+                return (Piece)Mathf.Sign(posDiag);
             }
 
             if (Mathf.Abs(negDiag) == board.Size)
             {
-                return (Piece) Mathf.Sign(negDiag);
+                return (Piece)Mathf.Sign(negDiag);
             }
 
             for (int i = 0; i < board.Size; i++)
             {
                 if (Mathf.Abs(sumX[i]) == board.Size)
                 {
-                    return (Piece) Mathf.Sign(sumX[i]);
+                    return (Piece)Mathf.Sign(sumX[i]);
                 }
             }
 

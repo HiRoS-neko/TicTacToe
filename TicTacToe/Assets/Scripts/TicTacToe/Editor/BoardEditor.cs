@@ -17,6 +17,8 @@ namespace TicTacToe.Editor
             if (GUILayout.Button("Initialize Board"))
             {
                 board.Pieces = new Piece[board.Size, board.Size];
+
+                boardObject.CreateGameBoard();
             }
 
             if (board.Pieces != null)
@@ -26,7 +28,7 @@ namespace TicTacToe.Editor
                     GUILayout.BeginHorizontal();
                     for (int j = 0; j < board.Pieces.GetLength(1); j++)
                     {
-                        board.Pieces[i, j] = (Piece) EditorGUILayout.EnumPopup(board.Pieces[i, j]);
+                        board.SetPiece(i, j, (Piece)EditorGUILayout.EnumPopup(board.Pieces[i, j]));
                     }
 
                     GUILayout.EndHorizontal();
@@ -34,7 +36,7 @@ namespace TicTacToe.Editor
             }
 
             boardObject.boardSpacePrefab =
-                (BoardSpace) EditorGUILayout.ObjectField("Board Space Prefab", boardObject, typeof(BoardSpace), false);
+                (BoardSpace)EditorGUILayout.ObjectField("Board Space Prefab", boardObject.boardSpacePrefab, typeof(BoardSpace), false);
 
             boardObject.board = board;
         }

@@ -42,7 +42,31 @@ namespace TicTacToe
 
         public void CreateGameBoard()
         {
-            
+            int numChildren = gameObject.transform.childCount;
+            for (int i = 0; i < numChildren; i++)
+            {
+
+                Destroy(gameObject.transform.GetChild(i).gameObject);
+            }
+
+            _spaceGameObjects = new BoardSpace[_board.Size, _board.Size];
+
+            for (int i = 0; i < _board.Size; i++)
+            {
+                for (int j = 0; j < _board.Size; j++)
+                {
+                    float x = j - (float)_board.Size / 2;
+                    float y = (float)_board.Size / 2 - i;
+
+                    //create a board space at x, y
+
+                    _spaceGameObjects[i, j] = Instantiate(boardSpacePrefab, transform.position + new Vector3(x, y, 0), transform.rotation * Quaternion.Euler(0, 180, 0), this.gameObject.transform);
+
+
+                }
+            }
+
+
         }
     }
 
@@ -73,17 +97,10 @@ namespace TicTacToe
             PieceMoved?.Invoke(x, y, piece);
         }
 
-        public Board SetPieceClone(int x, int y, Piece piece)
+        public void SetPieceSilent(int x, int y, Piece piece)
         {
-            var temp = new Board {Size = this.Size, Pieces = (Piece[,]) this._pieces.Clone()};
-            temp.SetPiece(x, y, piece);
-            return temp;
+            _pieces[x, y] = piece;
         }
 
-        public static Board Clone(Board board)
-        {
-            var temp = new Board {Size = board.Size, Pieces = (Piece[,]) board._pieces.Clone()};
-            return temp;
-        }
     }
 }
