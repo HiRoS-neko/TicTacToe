@@ -28,6 +28,10 @@ namespace TicTacToe
             }
         }
 
+        private Vector2 _boardBounds;
+
+        private Control.InputControl _controls;
+
         private void PieceMoved(int x, int y, Piece piece)
         {
             //update the game object in space
@@ -45,7 +49,6 @@ namespace TicTacToe
             int numChildren = gameObject.transform.childCount;
             for (int i = 0; i < numChildren; i++)
             {
-
                 Destroy(gameObject.transform.GetChild(i).gameObject);
             }
 
@@ -55,18 +58,41 @@ namespace TicTacToe
             {
                 for (int j = 0; j < _board.Size; j++)
                 {
-                    float x = j - (float)_board.Size / 2;
-                    float y = (float)_board.Size / 2 - i;
+                    float x = j - (float) _board.Size / 2;
+                    float y = (float) _board.Size / 2 - i;
 
                     //create a board space at x, y
 
-                    _spaceGameObjects[i, j] = Instantiate(boardSpacePrefab, transform.position + new Vector3(x, y, 0), transform.rotation * Quaternion.Euler(0, 180, 0), this.gameObject.transform);
-
-
+                    _spaceGameObjects[i, j] = Instantiate(boardSpacePrefab,
+                        transform.localToWorldMatrix * (transform.localPosition + new Vector3(x, y, 0)),
+                        transform.rotation * Quaternion.Euler(0, 180, 0), transform);
                 }
             }
 
+            _boardBounds = Vector2.one * ((float) _board.Size / 2);
+        }
 
+        public void OnEnable()
+        {
+            _controls = FindObjectOfType<Control.InputControl>();
+            _controls.Pan += Pan;
+            _controls.Zoom += Zoom;
+        }
+
+        private void OnDisable()
+        {
+            _controls.Pan -= Pan;
+            _controls.Zoom -= Zoom;
+        }
+
+        private void Zoom(float zoom)
+        {
+            transform.parent.localScale += zoom * Vector3.one;
+        }
+
+        private void Pan(Vector2 pan)
+        {
+            transform.localPosition += (Vector3) pan;
         }
     }
 
@@ -101,6 +127,5 @@ namespace TicTacToe
         {
             _pieces[x, y] = piece;
         }
-
     }
 }
