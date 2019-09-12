@@ -8,6 +8,9 @@ namespace TicTacToe
         [SerializeField] private GameObject _xPiece;
         [SerializeField] private GameObject _oPiece;
 
+
+        public Vector2Int Coordinates;
+
         public void SetPiece(Piece piece)
         {
             switch (piece)

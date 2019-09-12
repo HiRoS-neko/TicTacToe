@@ -22,6 +22,8 @@ namespace Control
 
         public Action<Vector2> Selection;
 
+        public Action<Ray> Ray;
+
         private Vector2 _rotation;
         private Vector2 _pan;
         private float _zoom;
@@ -105,7 +107,8 @@ namespace Control
                             var finger1 = Input.GetTouch(0);
                             var finger2 = Input.GetTouch(1);
                             //a zoom, check delta position of the difference 
-                            _zoom = Mathf.Lerp(_zoom, (finger1.deltaPosition - finger2.deltaPosition).magnitude, _interpolation);
+                            _zoom = Mathf.Lerp(_zoom, (finger1.deltaPosition - finger2.deltaPosition).magnitude,
+                                _interpolation);
                             break;
                     }
 

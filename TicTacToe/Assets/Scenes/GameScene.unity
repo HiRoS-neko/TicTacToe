@@ -253,7 +253,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 9
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -346,9 +346,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1948492518}
   - component: {fileID: 1948492517}
-  - component: {fileID: 1948492521}
   - component: {fileID: 1948492520}
-  - component: {fileID: 1948492519}
+  - component: {fileID: 1948492521}
+  - component: {fileID: 1948492522}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -368,6 +368,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9c15ffe1265cc64593c88d9f7e54d81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
   boardSpacePrefab: {fileID: 3799809894064303664, guid: 4b0372129717fa8489ea2bba565bbe22,
     type: 3}
 --- !u!4 &1948492518
@@ -384,21 +385,6 @@ Transform:
   m_Father: {fileID: 619951073}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1948492519
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1948492516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8182066e72ad1164098ce7355677eb94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _difficulty: 2
-  _role: -1
-  _currentBoard: {fileID: 1948492517}
 --- !u!114 &1948492520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,9 +397,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8182066e72ad1164098ce7355677eb94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _difficulty: 2
   _role: 1
-  _currentBoard: {fileID: 1948492517}
+  _completed: 0
+  _difficulty: 1
 --- !u!114 &1948492521
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,9 +409,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1948492516}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a56024fd04394b4ba4d6d0c1920349c, type: 3}
+  m_Script: {fileID: 11500000, guid: 6dec4bf953effbc42852dd78c4ee8630, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _ai:
+  _matchType: 0
+  _players:
   - {fileID: 1948492520}
-  - {fileID: 1948492519}
+  - {fileID: 1948492522}
+  _boardObject: {fileID: 1948492517}
+--- !u!114 &1948492522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948492516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0477575bed69176479a901086a2ba91d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _role: -1
+  _completed: 0

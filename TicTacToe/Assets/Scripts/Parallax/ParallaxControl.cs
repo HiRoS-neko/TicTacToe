@@ -1,6 +1,7 @@
 ﻿using System;
 using Control;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace Parallax
 {
@@ -21,6 +22,12 @@ namespace Parallax
                             Mathf.Min(Display.main.renderingWidth, Display.main.renderingHeight);
             _camera = GetComponent<Camera>();
             _input.Rotation += Rotation;
+            _input.Selection += Selection;
+        }
+
+        private void Selection(Vector2 pos)
+        {
+            _input.Ray?.Invoke(_camera.ScreenPointToRay(pos));
         }
 
         private void Rotation(Vector2 rot)
@@ -36,6 +43,7 @@ namespace Parallax
         private void OnDisable()
         {
             _input.Rotation -= Rotation;
+            _input.Selection -= Selection;
         }
     }
 }

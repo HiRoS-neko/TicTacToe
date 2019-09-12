@@ -1,239 +1,112 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro.EditorUtilities;
 using UnityEngine;
 using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
 namespace TicTacToe
 {
-    public class AIPlayer : MonoBehaviour
+    internal class MiniMax : IEnumerator
     {
-        public enum Difficulty
+        private int _depth;
+        private bool _isMax;
+
+        private int _x, _y;
+
+        private Board _board;
+
+        private Piece _role;
+
+        private Tuple<int, Tuple<int, int>> _best;
+        private int _score;
+
+        private Piece Role;
+
+        public MiniMax(Board board, int depth, bool isMax, Piece role)
         {
-            //difiiculty is based on depth the minimax will go
-            Easy = 1, // essentially random
-            Medium = 2, // difficult on small baords
-            Hard = 4, // difficult on medium boards
-            VeryHard = 6, // difficult on large boards
-            Impossible = 8 // should be effectively impossible to win
+            _depth = depth;
+            _isMax = isMax;
+            _board = board;
+
+            Role = role;
+            _role = (isMax ? role : (Piece) ((int) role * -1));
+
+            _score = (EvaluateBoard(board, (isMax ? _role : (Piece) ((int) _role * -1))) -
+                      EvaluateBoard(board, (isMax ? (Piece) ((int) _role * -1) : _role)));
+
+            if (isMax) _best = new Tuple<int, Tuple<int, int>>(int.MinValue, null);
+            else _best = new Tuple<int, Tuple<int, int>>(int.MaxValue, null);
         }
 
-        [SerializeField] private Difficulty _difficulty;
-
-        [SerializeField] private Piece _role;
-
-        [SerializeField] private BoardObject _currentBoard;
-
-        [ContextMenu("Play a move")]
-        public bool CalculateMove()
+        public bool MoveNext()
         {
-            return CalculateMove(_currentBoard);
-        }
-
-        public bool CalculateMove(BoardObject boardObject)
-        {
-            if (boardObject == null || _currentBoard == null)
+            if (_board.Pieces[_x, _y] == Piece.None)
             {
-                Debug.LogError("No valid board found", gameObject);
-                return false;
-            }
+                //do move to board
+                _board.SetPieceSilent(_x, _y, _role);
 
-            if (boardObject == null) boardObject = _currentBoard;
+                //try move in minimax
+                var miniMax = new MiniMax(_board, _depth - 1, !_isMax, Role);
 
-            Piece win = Piece.None;
+                while (miniMax.MoveNext()) ;
 
-            if (!MovesLeft(boardObject.board) || (win = HasWin(boardObject.board)) != Piece.None)
-            {
-                switch (win)
+                var temp = miniMax.GetBest();
+
+                //undo move on board
+                _board.SetPieceSilent(_x, _y, Piece.None);
+
+
+                if (_isMax)
                 {
-                    case Piece.XPiece:
-                        Debug.Log("X has won");
-                        return false;
-                        break;
-                    case Piece.None:
-                        Debug.Log("No available moves left");
-                        return false;
-                        break;
-                    case Piece.OPiece:
-                        Debug.Log("O has won");
-                        return false;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            var pos = MiniMax(boardObject.board, (int)_difficulty, true);
-
-            if (pos.Item2 != null)
-            {
-                boardObject.board.SetPiece(pos.Item2.Item1, pos.Item2.Item2, _role);
-            }
-
-            return true;
-        }
-        
-        /// <summary>
-        /// A function to determine what move to play of tic tac toe based on the minimax algorithm
-        /// </summary>
-        /// <param name="board">The state of the board to be used to find a move</param>
-        /// <param name="depth">The remaining depth left of the algorithm</param>
-        /// <returns></returns>
-        public Tuple<int, Tuple<int, int>> MiniMax(Board board, int depth, bool isMax)
-        {
-            int score = 0;
-            Tuple<int, int> move = null;
-
-            var curPlayer = (isMax ? _role : (Piece)((int)_role * -1));
-
-            //evaluate the score of the current board
-            score = (EvaluateBoard(board, (isMax ? _role : (Piece)((int)_role * -1))) -
-                     EvaluateBoard(board, (isMax ? (Piece)((int)_role * -1) : _role)));
-
-            //if there is no moves left or someone has one, return the score
-            if (!MovesLeft(board) || depth == 0) return new Tuple<int, Tuple<int, int>>(score, move);
-
-            if (isMax)
-            {
-                Tuple<int, Tuple<int, int>> best = new Tuple<int, Tuple<int, int>>(int.MinValue, move);
-                for (int i = 0; i < board.Size; i++)
-                {
-                    for (int j = 0; j < board.Size; j++)
+                    if (temp.Item1 > _best.Item1)
                     {
-                        if (board.Pieces[i, j] == Piece.None)
+                        _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                    }
+                    else if (temp.Item1 == _best.Item1)
+                    {
+                        //choose randomly between them in order to make a game non-deterministic
+                        var r = Random.Range(0, 1f);
+                        if (r > 0.5f)
                         {
-                            //do move to board
-                            board.SetPieceSilent(i, j, curPlayer);
-
-                            //try move in minimax
-                            var temp = MiniMax(board, depth - 1, !isMax);
-
-                            //undo move on board
-                            board.SetPieceSilent(i, j, Piece.None);
-
-                            if (temp.Item1 > best.Item1)
-                            {
-                                best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
-                            }
-                            else if (temp.Item1 == best.Item1)
-                            {
-                                //choose randomly between them in order to make a game non-deterministic
-                                var r = Random.Range(0, 1f);
-                                if (r > 0.5f)
-                                {
-                                    best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
-                                }
-                            }
+                            _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
                         }
                     }
                 }
-
-                return best;
-            }
-
-            else
-            {
-                Tuple<int, Tuple<int, int>> best = new Tuple<int, Tuple<int, int>>(int.MaxValue, move);
-                for (int i = 0; i < board.Size; i++)
+                else
                 {
-                    for (int j = 0; j < board.Size; j++)
+                    if (temp.Item1 < _best.Item1)
                     {
-                        if (board.Pieces[i, j] == Piece.None)
+                        _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                    }
+                    else if (temp.Item1 == _best.Item1)
+                    {
+                        //choose randomly between them in order to make a game non-deterministic
+                        var r = Random.Range(0, 1f);
+                        if (r > 0.5f)
                         {
-                            //do move to board
-                            board.SetPieceSilent(i, j, curPlayer);
-
-                            //try move in minimax
-                            var temp = MiniMax(board, depth - 1, !isMax);
-
-                            //undo move on board
-                            board.SetPieceSilent(i, j, Piece.None);
-
-                            if (temp.Item1 < best.Item1)
-                            {
-                                best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(i, j));
-                            }
+                            _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
                         }
                     }
                 }
-
-                return best;
             }
 
-            //move = new Tuple<int, int>(Random.Range(0, board.Size), Random.Range(0, board.Size));
 
-            return new Tuple<int, Tuple<int, int>>(score, move);
-        }
-
-        [ContextMenu("Evaluate Board")]
-        private void EvaluateBoard()
-        {
-            Debug.Log("Board Value is " + EvaluateBoard(_currentBoard.board, _role));
-        }
-
-
-        private Piece HasWin(Board board)
-        {
-            int[] sumX = new int[board.Size];
-            int posDiag = 0, negDiag = 0;
-            for (int i = 0; i < board.Size; i++)
+            _x += 1;
+            if (_x >= _board.Size)
             {
-                posDiag += (int)board.Pieces[i, i];
-                negDiag += (int)board.Pieces[i, (board.Size - 1) - i];
-                int sumY = 0;
-                for (int j = 0; j < board.Size; j++)
+                _x = 0;
+                _y += 1;
+                if (_y >= _board.Size)
                 {
-                    sumY += (int)board.Pieces[i, j];
-                    sumX[j] += (int)board.Pieces[i, j];
-                }
-
-
-                if (Mathf.Abs(sumY) == board.Size)
-                {
-                    return (Piece)Mathf.Sign(sumY);
+                    _x = 0;
+                    _y = 0;
+                    return true;
                 }
             }
 
-            if (Mathf.Abs(posDiag) == board.Size)
-            {
-                return (Piece)Mathf.Sign(posDiag);
-            }
-
-            if (Mathf.Abs(negDiag) == board.Size)
-            {
-                return (Piece)Mathf.Sign(negDiag);
-            }
-
-            for (int i = 0; i < board.Size; i++)
-            {
-                if (Mathf.Abs(sumX[i]) == board.Size)
-                {
-                    return (Piece)Mathf.Sign(sumX[i]);
-                }
-            }
-
-
-            return Piece.None;
-        }
-
-
-        private bool MovesLeft(Board board)
-        {
-            bool available = false;
-
-            //check for win conditions already
-            //if (HasWin(board) != Piece.None) return false;
-
-            //check for available spots left
-            foreach (var boardPiece in board.Pieces)
-            {
-                if (boardPiece == Piece.None)
-                {
-                    available = true;
-                    break;
-                }
-            }
-
-            return available;
+            return false;
         }
 
         private int EvaluateBoard(Board board, Piece pieceToEvaluateFor)
@@ -358,5 +231,69 @@ namespace TicTacToe
 
             return score;
         }
+
+
+        public Tuple<int, Tuple<int, int>> GetBest()
+        {
+            return _best;
+        }
+
+        public bool IsCompleted { get; set; }
+
+        public void Reset()
+        {
+            _x = 0;
+            _y = 0;
+            _depth = 0;
+            _isMax = false;
+        }
+
+        public object Current { get; }
+    }
+
+
+    public class AIPlayer : Player
+    {
+        public enum Difficulty
+        {
+            //difiiculty is based on depth the minimax will go
+            Easy = 1, // essentially random
+            Medium = 2, // difficult on small baords
+            Hard = 4, // difficult on medium boards
+            VeryHard = 6, // difficult on large boards
+            Impossible = 8 // should be effectively impossible to win
+        }
+
+        [SerializeField] private Difficulty _difficulty;
+
+
+        public IEnumerator CalculateMove(BoardObject boardObject)
+        {
+            Piece win = Piece.None;
+
+
+            var miniMax = new MiniMax(boardObject.board, (int) _difficulty, true, _role);
+
+            while (miniMax.MoveNext())
+            {
+                yield return null;
+            }
+
+            var pos = miniMax.GetBest();
+
+            if (pos.Item2 != null)
+            {
+                boardObject.board.SetPiece(pos.Item2.Item1, pos.Item2.Item2, _role);
+            }
+
+            _completed = true;
+        }
+
+        public override void StartTurn(BoardObject boardObject)
+        {
+            _completed = false;
+            StartCoroutine(CalculateMove(boardObject));
+        }
+
     }
 }

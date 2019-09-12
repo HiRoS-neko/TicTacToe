@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace TicTacToe
 {
@@ -12,6 +13,10 @@ namespace TicTacToe
 
     public class BoardObject : MonoBehaviour
     {
+        [SerializeField] private Camera _camera;
+
+        public Action<BoardObject, Vector2Int> moveRegistered;
+
         public Board board
         {
             get { return _board; }
@@ -66,6 +71,8 @@ namespace TicTacToe
                     _spaceGameObjects[i, j] = Instantiate(boardSpacePrefab,
                         transform.localToWorldMatrix * (transform.localPosition + new Vector3(x, y, 0)),
                         transform.rotation * Quaternion.Euler(0, 180, 0), transform);
+
+                    _spaceGameObjects[i, j].Coordinates = new Vector2Int(i, j);
                 }
             }
 
@@ -77,12 +84,30 @@ namespace TicTacToe
             _controls = FindObjectOfType<Control.InputControl>();
             _controls.Pan += Pan;
             _controls.Zoom += Zoom;
+            _controls.Ray += Ray;
+        }
+
+        private void Ray(Ray ray)
+        {
+            //ray trace ray and check to see if intersects with a board piece
+            if (Physics.Raycast(ray, out var hit))
+            {
+                if (hit.transform.CompareTag("Space"))
+                {
+                    //hits a space
+                    //for now we will just make it a X
+                    //todo make a player object and pass to that here instead
+                    var space = hit.transform.GetComponent<BoardSpace>();
+                    moveRegistered?.Invoke(this, space.Coordinates);
+                }
+            }
         }
 
         private void OnDisable()
         {
             _controls.Pan -= Pan;
             _controls.Zoom -= Zoom;
+            _controls.Ray -= Ray;
         }
 
         private void Zoom(float zoom)
@@ -126,6 +151,11 @@ namespace TicTacToe
         public void SetPieceSilent(int x, int y, Piece piece)
         {
             _pieces[x, y] = piece;
+        }
+
+        public void SetPiece(Vector2Int coordinate, Piece piece)
+        {
+            SetPiece(coordinate.x, coordinate.y, piece);
         }
     }
 }

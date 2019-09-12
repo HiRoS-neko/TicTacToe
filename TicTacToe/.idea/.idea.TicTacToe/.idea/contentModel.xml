@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="C:\Users\Administrator\.Rider2019.2\system\extResources" t="IncludeRecursive" />
-    <e p="C:\Users\Administrator\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_TicTacToe.200654624.00" t="ExcludeRecursive" />
-    <e p="C:\Users\Administrator\TicTacToe\TicTacToe" t="IncludeRecursive">
+    <e p="C:\Users\kg15nd\.Rider2019.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\kg15nd\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_TicTacToe.-424048939.00" t="ExcludeRecursive" />
+    <e p="C:\Users\kg15nd\TicTacToe\TicTacToe" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
@@ -15,13 +15,15 @@
             <e p="ParallaxControl.cs" t="Include" />
           </e>
           <e p="TicTacToe" t="Include">
-            <e p="AIMatch.cs" t="Include" />
             <e p="AIPlayer.cs" t="Include" />
             <e p="BoardObject.cs" t="Include" />
             <e p="BoardSpace.cs" t="Include" />
             <e p="Editor" t="Include">
               <e p="BoardEditor.cs" t="Include" />
             </e>
+            <e p="HumanPlayer.cs" t="Include" />
+            <e p="Match.cs" t="Include" />
+            <e p="Player.cs" t="Include" />
           </e>
         </e>
       </e>
