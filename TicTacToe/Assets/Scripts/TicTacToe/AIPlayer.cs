@@ -42,6 +42,12 @@ namespace TicTacToe
 
         public bool MoveNext()
         {
+            if (_depth == -1)
+            {
+                _best = new Tuple<int, Tuple<int, int>>(_score, null);
+                return false;
+            }
+
             if (_board.Pieces[_x, _y] == Piece.None)
             {
                 //do move to board
@@ -50,43 +56,44 @@ namespace TicTacToe
                 //try move in minimax
                 var miniMax = new MiniMax(_board, _depth - 1, !_isMax, Role);
 
-                while (miniMax.MoveNext()) ;
+                while (miniMax.MoveNext())
+                {
+                }
 
-                var temp = miniMax.GetBest();
+                var (score, _) = miniMax.GetBest();
 
                 //undo move on board
                 _board.SetPieceSilent(_x, _y, Piece.None);
 
-
                 if (_isMax)
                 {
-                    if (temp.Item1 > _best.Item1)
+                    if (score > _best.Item1)
                     {
-                        _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                        _best = new Tuple<int, Tuple<int, int>>(score, new Tuple<int, int>(_x, _y));
                     }
-                    else if (temp.Item1 == _best.Item1)
+                    else if (score == _best.Item1)
                     {
                         //choose randomly between them in order to make a game non-deterministic
                         var r = Random.Range(0, 1f);
                         if (r > 0.5f)
                         {
-                            _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                            _best = new Tuple<int, Tuple<int, int>>(score, new Tuple<int, int>(_x, _y));
                         }
                     }
                 }
                 else
                 {
-                    if (temp.Item1 < _best.Item1)
+                    if (score < _best.Item1)
                     {
-                        _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                        _best = new Tuple<int, Tuple<int, int>>(score, new Tuple<int, int>(_x, _y));
                     }
-                    else if (temp.Item1 == _best.Item1)
+                    else if (score == _best.Item1)
                     {
                         //choose randomly between them in order to make a game non-deterministic
                         var r = Random.Range(0, 1f);
                         if (r > 0.5f)
                         {
-                            _best = new Tuple<int, Tuple<int, int>>(temp.Item1, new Tuple<int, int>(_x, _y));
+                            _best = new Tuple<int, Tuple<int, int>>(score, new Tuple<int, int>(_x, _y));
                         }
                     }
                 }
@@ -102,11 +109,11 @@ namespace TicTacToe
                 {
                     _x = 0;
                     _y = 0;
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         private int EvaluateBoard(Board board, Piece pieceToEvaluateFor)
@@ -200,7 +207,7 @@ namespace TicTacToe
                 for (int j = 0; j < board.Size; j++)
                 {
                     if (board.Pieces[i, j] != pieceToEvaluateFor) break;
-                    else if (j == board.Size - 1) score += 10;
+                    else if (j == board.Size - 1) score += 15;
                 }
             }
 
@@ -210,7 +217,7 @@ namespace TicTacToe
                 for (int j = 0; j < board.Size; j++)
                 {
                     if (board.Pieces[j, i] != pieceToEvaluateFor) break;
-                    else if (j == board.Size - 1) score += 10;
+                    else if (j == board.Size - 1) score += 15;
                 }
             }
 
@@ -218,7 +225,7 @@ namespace TicTacToe
             for (int i = 0; i < board.Size; i++)
             {
                 if (board.Pieces[i, i] != pieceToEvaluateFor) break;
-                else if (i == board.Size - 1) score += 10;
+                else if (i == board.Size - 1) score += 15;
             }
 
             //diagonal negative
@@ -226,7 +233,7 @@ namespace TicTacToe
             {
                 int j = (board.Size - 1) - i;
                 if (board.Pieces[i, j] != pieceToEvaluateFor) break;
-                else if (i == board.Size - 1) score += 10;
+                else if (i == board.Size - 1) score += 15;
             }
 
             return score;
@@ -237,8 +244,6 @@ namespace TicTacToe
         {
             return _best;
         }
-
-        public bool IsCompleted { get; set; }
 
         public void Reset()
         {
@@ -279,11 +284,11 @@ namespace TicTacToe
                 yield return null;
             }
 
-            var pos = miniMax.GetBest();
+            var (_, move) = miniMax.GetBest();
 
-            if (pos.Item2 != null)
+            if (move != null)
             {
-                boardObject.board.SetPiece(pos.Item2.Item1, pos.Item2.Item2, _role);
+                boardObject.board.SetPiece(move.Item1, move.Item2, _role);
             }
 
             _completed = true;
@@ -294,6 +299,5 @@ namespace TicTacToe
             _completed = false;
             StartCoroutine(CalculateMove(boardObject));
         }
-
     }
 }

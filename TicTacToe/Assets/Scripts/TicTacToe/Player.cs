@@ -8,7 +8,11 @@ namespace TicTacToe
         [SerializeField] protected bool _completed;
 
         public abstract void StartTurn(BoardObject boardObject);
-        public bool CompletedTurn => _completed;
+        public bool CompletedTurn
+        {
+            get => _completed;
+            set => _completed = value;
+        }
 
         public static Piece HasWin(Board board)
         {

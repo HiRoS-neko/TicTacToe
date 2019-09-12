@@ -58,6 +58,7 @@ namespace TicTacToe
             do
             {
                 // player starts turn
+                _players[playerIndex].CompletedTurn = false;
                 _players[playerIndex].StartTurn(_boardObject);
                 //wait for the end of their turn
                 do
