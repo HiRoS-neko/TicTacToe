@@ -42,7 +42,7 @@ namespace TicTacToe
 
         public bool MoveNext()
         {
-            if (_depth == -1)
+            if (_depth == -1 || !Player.MovesLeft(_board) || Player.HasWin(_board) != Piece.None)
             {
                 _best = new Tuple<int, Tuple<int, int>>(_score, null);
                 return false;

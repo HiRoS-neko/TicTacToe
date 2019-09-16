@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -24,6 +25,12 @@ namespace Control
 
         public Action<Ray> Ray;
 
+        public TextMeshPro _debugText;
+
+        [SerializeField] private bool _debugRotation;
+        [SerializeField] private bool _debugZoom;
+        [SerializeField] private bool _debugPan;
+
         private Vector2 _rotation;
         private Vector2 _pan;
         private float _zoom;
@@ -33,6 +40,12 @@ namespace Control
         private TouchPhase _touchPhase;
         private Vector2 _selection;
         private bool _select;
+        private bool _isDebugTextNotNull;
+
+        private void Start()
+        {
+            _isDebugTextNotNull = _debugText != null;
+        }
 
         private void Awake()
         {
@@ -60,7 +73,7 @@ namespace Control
                     _rotation = Vector2.Lerp(_rotation,
                         new Vector2(
                             (Input.GetKey(KeyCode.RightArrow) ? 1 : 0) -
-                            (Input.GetKey(KeyCode.LeftControl) ? 1 : 0),
+                            (Input.GetKey(KeyCode.LeftArrow) ? 1 : 0),
                             (Input.GetKey(KeyCode.UpArrow) ? 1 : 0) -
                             (Input.GetKey(KeyCode.DownArrow) ? 1 : 0)).normalized, _interpolation);
 
@@ -121,6 +134,14 @@ namespace Control
             if (_rotation != Vector2.zero) Rotation?.Invoke(_rotation);
             if (_pan != Vector2.zero) Pan?.Invoke(_pan);
             if (Math.Abs(_zoom) > 0.0001f) Zoom?.Invoke(_zoom);
+
+            if (_isDebugTextNotNull)
+            {
+                _debugText.text = "";
+                if (_debugRotation) _debugText.text += _rotation + "\n";
+                if (_debugZoom) _debugText.text += _zoom + "\n";
+                if (_debugPan) _debugText.text += _pan + "\n";
+            }
 
             if (_select)
             {
